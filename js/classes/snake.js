@@ -1,17 +1,24 @@
 import { ctx } from '../main.js';
+import { allFood } from './food.js';
 
 export let allSnakes = [];
+const directions = ['up', 'down', 'left', 'right'];
+
+const randomDirection = () => {
+  return directions[Math.floor(Math.random() * directions.length)];
+};
 
 export default class Snake {
-  constructor(x, y, direction, color, name) {
-    this.x = x;
-    this.y = y;
+  constructor(color, name, tick) {
+    this.x = (Math.floor(Math.random() * (800 / 10 - 10)) + 1) * 10;
+    this.y = (Math.floor(Math.random() * (800 / 10 - 10)) + 1) * 10;
     this.name = name;
-    this.direction = direction;
+    this.direction = randomDirection();
     this.color = color;
     this.tail = [];
     this.enemySnakes = allSnakes.filter((snake) => snake.name !== this.name);
     allSnakes.push(this);
+    this.tick = tick;
   }
   //draw the snake
   draw() {
@@ -42,15 +49,28 @@ export default class Snake {
         break;
     }
     if (this.isCollidingWithWall()) {
-      console.log('collided with wall');
       this.destroy();
     }
     this.enemySnakes.forEach((snake) => {
       if (this.isColliding(snake)) {
-        console.log('collided with another snake');
         this.destroy();
       }
     });
+    if (this.isOutsideOfCanvas()) {
+      this.destroy();
+    }
+  }
+
+  //if snake is outside of the canvas, destroy
+  isOutsideOfCanvas() {
+    if (this.x < 0 || this.x > 800 - 10 || this.y < 0 || this.y > 800 - 10) {
+      return true;
+    }
+    return false;
+  }
+
+  update() {
+    this.tick(this, allSnakes, allFood);
   }
 
   destroy() {
